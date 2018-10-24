@@ -1,9 +1,9 @@
-contract type Callback = sig
+contract type CallbackContract = sig
   type storage
-  val%entry main : bytes -> storage -> operation list * storage
+  val%entry main : bytes -> _
 end
 
-contract Token = struct
+contract TokenContract = struct
   type storage = {
     balance_map : (address, nat) big_map;
     symbol : string;
@@ -12,15 +12,23 @@ contract Token = struct
     total : nat;
   }
 
+  let%init storage = {
+    balance_map = (BigMap [(tz1AAAAAAAAAAAAAAAAAAAAAAAAAAAAowner : address), 10000p;] : (address, nat) big_map);
+    symbol = "SAMPLE";
+    name = "sample token";
+    decimal = 2p;
+    total = 10000p;
+  }
+
   (* error list 
      100 : owner's balance is not enough
   *)
 
-  let%entry info (callback_contract : Callback.instance) storage =
+  let%entry info (callback_contract : CallbackContract.instance) storage =
     [Contract.call callback_contract 0tz (Bytes.pack (storage.symbol, storage.name, storage.decimal, storage.total))], storage
 
 
-  let%entry transfer (params : address * nat * (Callback.instance * bytes) option) storage =
+  let%entry transfer (params : address * nat * (CallbackContract.instance * bytes) option) storage =
     let receiver, amount, callback_option = params in
     let owner = Current.sender () in
     let owner_balance = 
@@ -50,6 +58,6 @@ contract Token = struct
     ops, storage
 
 
-  let%entry custom (p : nat * bytes) s =
-    Current.failwith (p, s)
+  let%entry custom _ _ =
+    Current.failwith ()
 end
