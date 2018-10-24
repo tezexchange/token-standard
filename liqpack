@@ -1,6 +1,6 @@
 (
   (name token)
   (files token.liq)
-  (main Token)
+  (main TokenContract)
   (deps )
 )
