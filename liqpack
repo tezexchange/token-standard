@@ -1,5 +1,6 @@
 (
   (name token)
+  (version 0.2.1)
   (files token.liq)
   (main TokenContract)
   (deps )

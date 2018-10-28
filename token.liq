@@ -25,12 +25,13 @@ contract TokenContract = struct
   *)
 
   let%entry info (callback_contract : CallbackContract.instance) storage =
-    [Contract.call callback_contract 0tz (Bytes.pack (storage.symbol, storage.name, storage.decimal, storage.total))], storage
+    let arg = Bytes.pack (storage.symbol, storage.name, storage.decimal, storage.total) in
+    [callback_contract.main arg 0tz], storage
 
 
   let%entry transfer (params : address * nat * (CallbackContract.instance * bytes) option) storage =
     let receiver, amount, callback_option = params in
-    let owner = Current.sender () in
+    let[@inline] owner = Current.sender () in
     let owner_balance = 
       match Map.find owner storage.balance_map with
       | None -> 0p
@@ -53,7 +54,8 @@ contract TokenContract = struct
       match callback_option with
       | None -> ([] : operation list)
       | Some (callback_contract, passing_bytes) ->
-        [Contract.call callback_contract 0tz (Bytes.pack (passing_bytes, receiver, amount, owner_balance, receiver_balance))]
+        let arg = Bytes.pack (passing_bytes, owner, receiver, amount, owner_balance, receiver_balance) in
+        [callback_contract.main arg 0tz]
     in
     ops, storage
 
