@@ -60,6 +60,6 @@ contract TokenContract = struct
     ops, storage
 
 
-  let%entry custom _ _ =
+  let%entry custom () _ =
     Current.failwith ()
 end
